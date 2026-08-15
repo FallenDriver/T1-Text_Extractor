@@ -1,4 +1,20 @@
-﻿lxml==6.1.1
+# Генерация датасета (src/generate_contracts.py)
 python-docx==1.2.0
-typing_extensions==4.16.0
-tzdata==2026.3
+lxml==6.1.1
+
+# Парсинг документов (common/parsers.py)
+pypdf==5.1.0
+
+# Веб-сервис (app/main.py)
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+httpx==0.28.1
+python-dotenv==1.0.1
+sqlalchemy==2.0.36
+python-multipart==0.0.20
+
+# База данных
+psycopg2-binary==2.9.10
+
+# Облачное хранилище (common/storage.py, класс SupabaseStorage)
+supabase==2.10.0

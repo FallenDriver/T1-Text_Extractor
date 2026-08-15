@@ -11,6 +11,12 @@ build/
 # База данных 
 *.db
 
+# Локально загруженные файлы (реальные, не синтетика — не коммитим)
+storage/uploads/
+
+# Файлы, сгенерированные src/parse_one.py при ручной проверке
+dataset/**/*_parsed.txt
+
 # dataset/docx/*.docx
 # dataset/pdf/*.pdf
 
