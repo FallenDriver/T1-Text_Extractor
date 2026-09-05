@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Contract Parser</title>
+    
+    <!-- Шрифт Inter для строгого стиля -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            /* Яркий электрический синий - баланс между строгостью и современностью */
+            --primary-blue: #007AFF; 
+            --primary-hover: #005ECB;
+            --bg-light: #f4f7fb;
+            --text-main: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* Переопределение цветов Bootstrap */
+        .btn-primary {
+            background-color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.35);
+        }
+        
+        .text-primary { color: var(--primary-blue) !important; }
+        .badge.bg-primary { background-color: var(--primary-blue) !important; }
+
+        /* Хедер */
+        .app-header {
+            background: white;
+            border-bottom: 3px solid var(--primary-blue);
+            padding: 1.2rem 0;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 2px 12px rgba(0, 122, 255, 0.08);
+        }
+
+        .brand-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: var(--primary-blue);
+            letter-spacing: -0.02em;
+        }
+
+        /* Карточки */
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 122, 255, 0.07);
+            overflow: hidden;
+        }
+
+        /* Форма входа */
+        #authSection .card {
+            border-top: 4px solid var(--primary-blue);
+        }
+
+        /* Таблица */
+        .table thead th {
+            background: linear-gradient(135deg, var(--primary-blue), #0088FF);
+            color: white;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 1rem 1.2rem;
+            border: none;
+        }
+
+        .table tbody td {
+            padding: 1rem 1.2rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 122, 255, 0.04);
+        }
+
+        /* Статусы */
+        .status-badge { 
+            min-width: 100px; 
+            font-weight: 600;
+            padding: 0.45em 0.9em;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        /* Информационная панель пользователя */
+        .user-panel {
+            background: white;
+            border-left: 4px solid var(--primary-blue);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 122, 255, 0.06);
+        }
+
+        #appSection { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Строгий хедер с синим акцентом -->
+    <header class="app-header">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-bar-graph fs-4" style="color: var(--primary-blue);"></i>
+                <span class="brand-title">Contract Intelligence</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container pb-5">
+
+        <!-- СЕКЦИЯ 1: АВТОРИЗАЦИЯ -->
+        <div class="row justify-content-center" id="authSection">
+            <div class="col-md-5">
+                <div class="card mt-4">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-shield-lock fs-1 text-primary"></i>
+                            <h4 class="mt-2 fw-bold">Вход в систему</h4>
+                            <p class="text-muted small">Доступ к реестру договоров</p>
+                        </div>
+                        <form id="authForm">
+                            <div class="mb-4">
+                                <label class="form-label fw-medium small text-uppercase text-muted">Email адрес</label>
+                                <input type="email" class="form-control form-control-lg" id="emailInput" placeholder="name@company.com" required>
+                                <div class="form-text ms-1">Аккаунт будет создан автоматически при первом входе</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 py-2" id="authBtn">
+                                Войти / Зарегистрироваться
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- СЕКЦИЯ 2: ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+        <div id="appSection">
+            
+            <!-- Панель пользователя -->
+            <div class="user-panel d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person-circle fs-5 me-2 text-primary"></i>
+                    <span class="fw-medium">Пользователь: <strong id="currentUserEmail" class="text-dark"></strong></span>
+                </div>
+                <button class="btn btn-sm btn-outline-danger border-0" onclick="logout()">
+                    <i class="bi bi-box-arrow-right me-1"></i> Выйти
+                </button>
+            </div>
+
+            <!-- Блок загрузки -->
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <form id="uploadForm" class="d-flex align-items-center gap-3">
+                        <div class="flex-grow-1">
+                            <label class="form-label fw-medium small text-uppercase text-muted mb-1">Загрузка документа</label>
+                            <input class="form-control" type="file" id="fileInput" accept=".pdf, .docx" required>
+                        </div>
+                        <div class="pt-4">
+                            <button class="btn btn-primary px-4 d-flex align-items-center" type="submit" id="submitBtn">
+                                <span id="btnText"><i class="bi bi-cloud-upload me-2"></i>Анализ</span>
+                                <div id="btnSpinner" class="spinner-border spinner-border-sm ms-2 d-none" role="status"></div>
+                            </button>
+                        </div>
+                    </form>
+                    <div id="alertBox" class="mt-3 d-none alert" role="alert"></div>
+                </div>
+            </div>
+
+            <!-- Таблица -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">#</th>
+                                    <th>Имя файла</th>
+                                    <th>Статус обработки</th>
+                                    <th>Номер договора</th>
+                                    <th>Дата</th>
+                                    <th>Стороны</th>
+                                    <th class="text-end">Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr><td colspan="7" class="text-center py-5 text-muted">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                    Загрузка реестра...
+                                </td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let currentUserId = null;
+        let updateInterval = null;
+
+        function showAlert(message, type = 'danger') {
+            const alertBox = document.getElementById('alertBox');
+            const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+            alertBox.className = `mt-3 alert alert-${type} d-flex align-items-center`;
+            alertBox.innerHTML = `<i class="bi ${icon} me-2"></i> ${message}`;
+            alertBox.classList.remove('d-none');
+            setTimeout(() => alertBox.classList.add('d-none'), 5000);
+        }
+
+        // --- ЛОГИКА АВТОРИЗАЦИИ ---
+        document.getElementById('authForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+            const btn = document.getElementById('authBtn');
+            const originalText = btn.innerText;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Авторизация...';
+
+            try {
+                const response = await fetch(`${API_BASE}/users/auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+
+                if (!response.ok) throw new Error('Ошибка авторизации на сервере');
+                
+                const userData = await response.json();
+                
+                currentUserId = userData.id;
+                document.getElementById('currentUserEmail').textContent = userData.email;
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('appSection').style.display = 'block';
+                
+                loadDocuments();
+                updateInterval = setInterval(loadDocuments, 3000);
+                
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        });
+
+        function logout() {
+            currentUserId = null;
+            clearInterval(updateInterval);
+            document.getElementById('authSection').style.display = 'flex';
+            document.getElementById('appSection').style.display = 'none';
+            document.getElementById('emailInput').value = '';
+        }
+
+        // --- ЛОГИКА ДОКУМЕНТОВ ---
+        async function loadDocuments() {
+            if (!currentUserId) return;
+            try {
+                const response = await fetch(`${API_BASE}/documents/${currentUserId}`);
+                if (!response.ok) throw new Error('Ошибка сети');
+                const data = await response.json();
+                
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-folder2-open fs-1 d-block mb-2 opacity-25"></i>
+                                Реестр пуст.
+                            </td>
+                        </tr>`;
+                    return;
+                }
+
+                data.forEach(doc => {
+                    let number = '-', date = '-', parties = '-', amount = '-';
+                    let statusHtml = '';
+
+                    if (doc.status === 'completed' && doc.extracted_data) {
+                        statusHtml = '<span class="badge bg-success status-badge"><i class="bi bi-check-lg me-1"></i>Готово</span>';
+                        number = doc.extracted_data.number || '-';
+                        date = doc.extracted_data.date || '-';
+                        parties = doc.extracted_data.parties || '-';
+                        amount = doc.extracted_data.amount || '-';
+                    } else if (doc.status === 'failed') {
+                        statusHtml = '<span class="badge bg-danger status-badge"><i class="bi bi-x-lg me-1"></i>Ошибка</span>';
+                    } else {
+                        statusHtml = '<span class="badge bg-warning text-dark status-badge"><span class="spinner-border spinner-border-sm me-1"></span>Анализ...</span>';
+                    }
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-muted small">#${doc.id}</td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark-text me-2 text-primary"></i>
+                                <span class="fw-medium">${doc.filename}</span>
+                            </div>
+                        </td>
+                        <td>${statusHtml}</td>
+                        <td class="fw-semibold">${number}</td>
+                        <td class="text-muted">${date}</td>
+                        <td><small class="text-muted">${parties}</small></td>
+                        <td class="text-end fw-medium">${amount}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки реестра:', error);
+            }
+        }
+
+        // --- ЗАГРУЗКА ФАЙЛА ---
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const btn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            
+            if (fileInput.files.length === 0) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('user_id', currentUserId);
+
+            btn.disabled = true;
+            btnText.innerHTML = 'Обработка...';
+            btnSpinner.classList.remove('d-none');
+
+            try {
+                const response = await fetch(`${API_BASE}/documents/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Сервер вернул ошибку: ${response.status}`);
+                }
+                
+                showAlert('Документ успешно загружен и отправлен на анализ', 'success');
+                loadDocuments();
+                fileInput.value = ''; 
+            } catch (error) {
+                showAlert(error.message);
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+                btnText.innerHTML = '<i class="bi bi-cloud-upload me-2"></i>Анализ';
+                btnSpinner.classList.add('d-none');
+            }
+        });
+    </script>
+</body>
+</html>
